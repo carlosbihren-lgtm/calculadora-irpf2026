@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador IRPF 2026 (Militar / CLT)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333; display: flex; justify-content: center; padding: 20px; }
+        .container { background-color: #ffffff; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); width: 100%; max-width: 800px; padding: 2rem; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 0.5rem; }
+        h2 { text-align: center; color: #16a085; border-top: 1px solid #eee; padding-top: 1.5rem; margin-top: 1.5rem; }
+        .disclaimer { background-color: #fffbe6; border: 1px solid #ffe58f; padding: 1rem; border-radius: 8px; text-align: center; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .form-group { margin-bottom: 0.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-group input[type="number"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .radio-group { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+        .radio-group label { font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+        button { width: 100%; padding: 0.85rem; font-size: 1.1rem; font-weight: 700; color: #fff; background-color: #27ae60; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+        button:hover { background-color: #219150; }
+        #resultado { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #34495e; display: none; }
+        #resultado p { font-size: 1.1rem; line-height: 1.6; display: flex; justify-content: space-between; margin: 0.5rem 0; }
+        #resultado p span { font-weight: 700; color: #2c3e50; }
+        #resultado .final-tax { font-size: 1.3rem; background-color: #ecf0f1; padding: 1rem; border-radius: 8px; }
+        #resultado .final-tax span { color: #c0392b; }
+        
+        /* Oculta/Exibe seções */
+        .hidden-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Simulador IRPF 2026 (Universal)</h1>
+        <div class="disclaimer">
+            <strong>ATENÇÃO:</strong> Esta é uma simulação baseada no <strong>PL 1.087/2025</strong> (ainda não sancionado) e tabelas de contribuição de 2025.
+        </div>
+
+        <form id="irpf-form">
+            <h2>1. Tipo de Vínculo</h2>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="tipoVinculo" value="militar" checked> Militar
+                </label>
+                <label>
+                    <input type="radio" name="tipoVinculo" value="clt"> CLT (Civil)
+                </label>
+            </div>
+
+            <div id="militar-inputs">
+                <h2>2. Rendimentos Tributáveis (Militar)</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="soldo">Soldo</label>
+                        <input type="number" id="soldo" step="0.01" value="4985.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="ad_hab">Ad. Habilitação</label>
+                        <input type="number" id="ad_hab" step="0.01" value="2243.25">
+                    </div>
+                    <div class="form-group">
+                        <label for="ad_mil">Ad. Militar</label>
+                        <input type="number" id="ad_mil" step="0.01" value="797.60">
+                    </div>
+                    <div class="form-group">
+                        <label for="ad_disp">Ad. Disponibilidade</label>
+                        <input type="number" id="ad_disp" step="0.01" value="598.20">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="outros_trib">Outros Rendimentos Tributáveis (Ex: Atrasados)</label>
+                        <input type="number" id="outros_trib" step="0.01" value="0">
+                    </div>
+                </div>
+
+                <h2>3. Deduções (Militar)</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="pensao_militar">Pensão Militar (CP)</label>
+                        <input type="number" id="pensao_militar" step="0.01" value="905.53">
+                    </div>
+                    <div class="form-group">
+                        <label for="fusex">FUSEX (Titular)</label>
+                        <input type="number" id="fusex" step="0.01" value="258.72">
+                    </div>
+                    <div class="form-group">
+                        <label for="fusex_dep">FUSEX (Dependentes)</label>
+                        <input type="number" id="fusex_dep" step="0.01" value="43.12">
+                    </div>
+                </div>
+            </div>
+
+            <div id="clt-inputs" class="hidden-section">
+                <h2>2. Rendimentos Tributáveis (CLT)</h2>
+                <div class="form-group">
+                    <label for="bruto_clt">Rendimento Bruto Mensal</label>
+                    <input type="number" id="bruto_clt" step="0.01" value="5000.00">
+                </div>
+                <h2 style="margin-top:0; padding-top:0;">3. Deduções (CLT)</h2>
+                <p style="text-align: center; margin-top: -1rem; margin-bottom: 1rem;">O desconto do INSS será calculado automaticamente.</p>
+            </div>
+
+            <div id="common-inputs">
+                <h2>4. Deduções Comuns (Todos)</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="dependentes">Nº Dependentes (IR)</label>
+                        <input type="number" id="dependentes" min="0" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="pensao_alim">Pensão Alimentícia (Valor Pago)</label>
+                        <input type="number" id="pensao_alim" step="0.01" value="0">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" id="calcularBtn" style="margin-top: 2rem;">Simular Imposto 2026</button>
+        </form>
+
+        <div id="resultado">
+            <h2>Resultado da Simulação</h2>
+            <p>Total Rend. Tributáveis: <span id="val_bruto"></span></p>
+            <p>Desconto Previdência (INSS/CP): <span id="val_previdencia"></span></p>
+            <p>Total Deduções: <span id="val_deducoes"></span></p>
+            <p style="font-weight: bold; font-size: 1.2rem; border-top: 1px dashed #ccc; padding-top: 8px;">Base de Cálculo (IRPF): <span id="val_base"></span></p>
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 1rem 0;">
+            <p>Imposto (Tabela Padrão): <span id="val_imposto_bruto"></span></p>
+            <p style="color: #007bff;">Redução (Nova Lei PL 1087): <span id="val_reducao"></span></p>
+            <p class="final-tax">Imposto Final Devido (2026): <span id="val_imposto_final"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // --- Função para Calcular INSS (Tabela 2025) ---
+        // Baseada nos dados das fontes 1.3, 1.4, 1.7, 1.9
+        function calcularINSS(salario) {
+            if (salario <= 1518.00) {
+                // Faixa 1 (7.5%)
+                return salario * 0.075;
+            } else if (salario <= 2793.88) {
+                // Faixa 2 (9%)
+                return (salario * 0.09) - 22.77;
+            } else if (salario <= 4190.83) {
+                // Faixa 3 (12%)
+                return (salario * 0.12) - 106.59;
+            } else if (salario <= 8157.41) {
+                // Faixa 4 (14%)
+                return (salario * 0.14) - 190.40;
+            } else {
+                // Acima do teto (R$ 8.157,41), o desconto é fixo no Teto (R$ 951,62)
+                //
+                return 951.62;
+            }
+        }
+
+        // --- Lógica para trocar os campos de input ---
+        const radios = document.querySelectorAll('input[name="tipoVinculo"]');
+        const militarInputs = document.getElementById('militar-inputs');
+        const cltInputs = document.getElementById('clt-inputs');
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'militar') {
+                    militarInputs.classList.remove('hidden-section');
+                    cltInputs.classList.add('hidden-section');
+                } else { // 'clt'
+                    militarInputs.classList.add('hidden-section');
+                    cltInputs.classList.remove('hidden-section');
+                }
+            });
+        });
+
+        // --- Lógica Principal do Cálculo ---
+        document.getElementById("calcularBtn").addEventListener("click", function() {
+            
+            const tipoVinculo = document.querySelector('input[name="tipoVinculo"]:checked').value;
+            
+            // --- Variáveis Comuns ---
+            const numDependentes = parseInt(document.getElementById("dependentes").value) || 0;
+            const pensao_alim = parseFloat(document.getElementById("pensao_alim").value) || 0;
+            const DEDUCAO_POR_DEPENDENTE_2025 = 189.59;
+            const deducaoDependentes = numDependentes * DEDUCAO_POR_DEPENDENTE_2025;
+
+            let totalBrutoTributavel = 0;
+            let descontoPrevidencia = 0; // INSS ou Pensão Militar
+            let totalDeducoes = 0;
+
+            // --- 1. CÁLCULO DA BASE (Depende do Vínculo) ---
+            if (tipoVinculo === 'militar') {
+                const soldo = parseFloat(document.getElementById("soldo").value) || 0;
+                const ad_hab = parseFloat(document.getElementById("ad_hab").value) || 0;
+                const ad_mil = parseFloat(document.getElementById("ad_mil").value) || 0;
+                const ad_disp = parseFloat(document.getElementById("ad_disp").value) || 0;
+                const outros_trib = parseFloat(document.getElementById("outros_trib").value) || 0;
+
+                const pensao_militar = parseFloat(document.getElementById("pensao_militar").value) || 0;
+                const fusex = parseFloat(document.getElementById("fusex").value) || 0;
+                const fusex_dep = parseFloat(document.getElementById("fusex_dep").value) || 0;
+
+                totalBrutoTributavel = soldo + ad_hab + ad_mil + ad_disp + outros_trib;
+                descontoPrevidencia = pensao_militar; // No caso militar, a previdência é a CP
+                totalDeducoes = descontoPrevidencia + fusex + fusex_dep + deducaoDependentes + pensao_alim;
+
+            } else { // tipoVinculo === 'clt'
+                totalBrutoTributavel = parseFloat(document.getElementById("bruto_clt").value) || 0;
+                descontoPrevidencia = calcularINSS(totalBrutoTributavel); // Magia acontece aqui
+                totalDeducoes = descontoPrevidencia + deducaoDependentes + pensao_alim;
+            }
+
+            const baseCalculo = Math.max(0, totalBrutoTributavel - totalDeducoes);
+
+            // --- 2. CÁLCULO DO IMPOSTO (Tabela IRPF 2025) ---
+            // Esta parte é igual para ambos, pois a base já foi definida.
+            let impostoBruto = 0;
+            let aliquotaPercentual = "Isento";
+            
+            if (baseCalculo <= 2428.80) {
+                impostoBruto = 0;
+                aliquotaPercentual = "Isento";
+            } else if (baseCalculo <= 2826.65) {
+                impostoBruto = (baseCalculo * 0.075) - 182.16;
+                aliquotaPercentual = "7,5%";
+            } else if (baseCalculo <= 3751.05) {
+                impostoBruto = (baseCalculo * 0.15) - 394.16;
+                aliquotaPercentual = "15,0%";
+            } else if (baseCalculo <= 4664.68) {
+                impostoBruto = (baseCalculo * 0.225) - 675.49;
+                aliquotaPercentual = "22,5%";
+            } else {
+                impostoBruto = (baseCalculo * 0.275) - 908.73;
+                aliquotaPercentual = "27,5%";
+            }
+            impostoBruto = Math.max(0, impostoBruto);
+
+            // --- 3. CÁLCULO DA REDUÇÃO (SIMULAÇÃO PL 1087/2025) ---
+            let reducaoPL = 0;
+            if (baseCalculo <= 5000.00) {
+                reducaoPL = Math.min(impostoBruto, 312.89);
+            } else if (baseCalculo <= 7000.00) {
+                reducaoPL = 1095.11 - (0.156445 * baseCalculo);
+            } else {
+                reducaoPL = 0;
+            }
+            reducaoPL = Math.max(0, reducaoPL);
+
+            // --- 4. CÁLCULO FINAL ---
+            const impostoFinal = Math.max(0, impostoBruto - reducaoPL);
+
+            // --- 5. EXIBIR SAÍDAS ---
+            const formatBRL = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            document.getElementById("val_bruto").textContent = formatBRL(totalBrutoTributavel);
+            document.getElementById("val_previdencia").textContent = `- ${formatBRL(descontoPrevidencia)}`;
+            document.getElementById("val_deducoes").textContent = `- ${formatBRL(totalDeducoes)}`;
+            document.getElementById("val_base").textContent = `${formatBRL(baseCalculo)} (${aliquotaPercentual})`;
+            document.getElementById("val_imposto_bruto").textContent = formatBRL(impostoBruto);
+            document.getElementById("val_reducao").textContent = `- ${formatBRL(reducaoPL)}`;
+            document.getElementById("val_imposto_final").textContent = formatBRL(impostoFinal);
+
+            document.getElementById("resultado").style.display = "block";
+        });
+    </script>
+
+</body>
+</html>
